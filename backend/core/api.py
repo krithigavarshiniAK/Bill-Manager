@@ -6,14 +6,15 @@ from uvicorn import Config, Server
 
 from .router import api_router
 from .loader import load_frontend
+from .config import Settings
 
 
 def _initializeApiInstance(port) -> FastAPI: 
     # Global fastapi instance that will host frontends and apis
     api_inst = FastAPI(
-        title="Bill Manager Api",
-        description="",
-        version=1.0,
+        title=Settings.PROJECT_NAME,
+        description=Settings.PROJECT_DESCRIPTION,
+        version=Settings.PROJECT_VERSION,
         servers=[{"url": f"http://localhost:{port}", "description": "Default"}],
     )
     api_inst.include_router(api_router)
@@ -139,4 +140,9 @@ class ApiServer:
         Returns process status, True if it is alive and False if it is closed
         """
         self._thread.is_alive()
+
+def launch():
+    api_server = ApiServer(ports=range(5000, 5050))
+    api_server.start()
+    api_server.join()
 
