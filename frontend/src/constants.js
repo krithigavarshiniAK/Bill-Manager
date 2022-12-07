@@ -1,0 +1,1 @@
+export const API_DEFAULT_HOST = "http://localhost:5000"; 

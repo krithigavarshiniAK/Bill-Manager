@@ -1,12 +1,15 @@
+import os
 import time
 import threading
 from fastapi import FastAPI
+from fastapi_sqlalchemy import DBSessionMiddleware, db
 from fastapi.middleware.cors import CORSMiddleware
 from uvicorn import Config, Server
 
 from .router import api_router
 from .loader import load_frontend
 from .config import Settings
+from database.db import Base, engine
 
 
 def _initializeApiInstance(port) -> FastAPI: 
@@ -35,9 +38,14 @@ def _initializeApiInstance(port) -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    # add database middleware
+    api_inst.add_middleware(DBSessionMiddleware, db_url="sqlite:///./database.db")
 
     # Attach the Frontend application
     load_frontend(api_inst)
+
+    # create database table
+    Base.metadata.create_all(bind=engine)
 
     return api_inst
 
@@ -140,6 +148,7 @@ class ApiServer:
         Returns process status, True if it is alive and False if it is closed
         """
         self._thread.is_alive()
+        
 
 def launch():
     api_server = ApiServer(ports=range(5000, 5050))
